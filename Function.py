@@ -310,3 +310,36 @@ def tw_to_txt(tw, range_r, range_c, sep):
             else:
                 clipboard = '{}{}\n'.format(clipboard, tw.item(r, c).data(0))
     return clipboard
+
+def ortho_line(inters_prec, inters_suiv, inters_courant, largeur_vallee):
+    x1 = inters_prec.x()
+    y1 = inters_prec.y()
+    x2 = inters_suiv.x()
+    y2 = inters_suiv.y()
+    x3 = inters_courant.x()
+    y3 = inters_courant.y()
+    # y = coeff_A * x + coeff_B est l'équation de la droite perpendiculaire à X1-X2 passant par X3
+    coeff_A = (x2 - x1) / (y1 - y2)
+    coeff_B = y3 - x3 * ((x2 - x1) / (y1 - y2))
+    # linestart et lineend sont les 2 extrémités de la polyligne perpendiculaire à X1-X2 passant par X3
+    if coeff_A < -1:
+        y_start = y3 + largeur_vallee
+        x_start = (y_start - coeff_B) / coeff_A
+        y_end = y3 - largeur_vallee
+        x_end = (y_end - coeff_B) / coeff_A
+    elif coeff_A <= 0 and coeff_A >= -1:
+        x_start = x3 + largeur_vallee
+        y_start = coeff_A *  x_start + coeff_B
+        x_end = x3 - largeur_vallee
+        y_end = coeff_A *  x_end + coeff_B
+    elif coeff_A > 0 and coeff_A <= 1:
+        x_start = x3 + largeur_vallee
+        y_start = coeff_A *  x_start + coeff_B
+        x_end = x3 - largeur_vallee
+        y_end = coeff_A *  x_end + coeff_B
+    elif coeff_A > 1:
+        y_start = y3 + largeur_vallee
+        x_start = (y_start - coeff_B) / coeff_A
+        y_end = y3 - largeur_vallee
+        x_end = (y_end - coeff_B) / coeff_A
+    return x_start, y_start, x_end, y_end

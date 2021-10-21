@@ -44,7 +44,7 @@ from qgis.PyQt.uic import *
 from qgis.core import *
 from qgis.gui import *
 
-from .Function import isfloat, interpole
+from .Function import isfloat, interpole, ortho_line
 from .GraphCommon import DraggableLegend, GraphCommon
 from .Structure.StructureCreateDialog import ClassStructureCreateDialog
 from .GraphResultDialog import GraphResultDialog
@@ -626,26 +626,19 @@ class GraphProfil(GraphCommon):
         riveGauche = QgsProject.instance().mapLayersByName('Designation_Rive gauche')[0]
         couche_profils = QgsProject.instance().mapLayersByName('profiles')[0]
         couche_branche = QgsProject.instance().mapLayersByName('branchs')[0]
+        largeur_vallee = 500
 
-        self.mgis.add_info("Rive droite")
         if riveDroite.isSpatial(): # Conversion des géométries en entités simples
-            self.mgis.add_info("Liste entités rives :")
             for feature in riveDroite.getFeatures():
-                self.mgis.add_info("Feature ID : " + str(feature.id()) + "\n")
                 geom = feature.geometry()
                 succes = QgsGeometry.convertToSingleType(geom) #succes est un booléen
                 geom_rd = geom
-                self.mgis.add_info(str(geom) + "\n")
         
-        self.mgis.add_info("Rive gauche")
         if riveGauche.isSpatial(): # Conversion des géométries en entités simples
-            self.mgis.add_info("Liste entités rives :")
             for feature in riveGauche.getFeatures():
-                self.mgis.add_info("Feature ID : " + str(feature.id()) + "\n")
                 geom = feature.geometry()
                 succes = QgsGeometry.convertToSingleType(geom)  #succes est un booléen
                 geom_rg = geom
-                self.mgis.add_info(str(geom) + "\n")
         
         # 1- Identification des profils qui intersectent rive gauche et rive droite
         self.mgis.add_info("Itération sur les profils")
@@ -703,97 +696,59 @@ class GraphProfil(GraphCommon):
             self.mgis.add_info("Trop de branches concernées, restreindre la délimitation des berges du lit mineur à une seule branche")
         else: # 3- Calcul des points d'intersection des profils interpolés avec la branche
             liste_intersec_profils_intermediaires = []
+            self.mgis.add_info("Coordonnées des intersections des profils intermédiaires avec la branche")
             for pos_curv_branch in np.arange(abs_premier_profil - abs_debut, abs_dernier_profil - abs_debut, maillage):
                 point = axe_branche.interpolate(pos_curv_branch)
                 liste_intersec_profils_intermediaires.append(point)
-                self.mgis.add_info(str(point))
-
-        #couche_profils.startEditing()
-        #if len(liste_intersec_profils_intermediaires) > 0:
-        #    segments_intersection = []
-        #    for ind_profil in range(len(liste_intersec_profils_intermediaires) - 1):
-        #        new_feature = QgsFeature(couche_profils.fields())
-        #        new_feature.setAttribute('name', 'interp_' + str(ind_profil))
-        #        new_feature.setAttribute('active', True)
-        #        new_feature.setGeometry(QgsGeometry.fromPolylineXY([liste_intersec_profils_intermediaires[ind_profil].asPoint(), liste_intersec_profils_intermediaires[ind_profil + 1].asPoint()]))
-        #        segments_intersection.append(new_feature)
-        #    (res, outFeats) = couche_profils.dataProvider().addFeatures(segments_intersection)
         
         couche_profils.startEditing()
-        nouveaux_profils = []
+        nouveaux_profils = {}
+        nouveaux_profils['profils'] = []
+        nouveaux_profils['abscisses'] = []
         if len(liste_intersec_profils_intermediaires) > 0:
             segments_intersection = []
             for ind_profil in range(len(liste_intersec_profils_intermediaires) - 2):
                 inters_prec = liste_intersec_profils_intermediaires[ind_profil].asPoint()
                 inters_suiv = liste_intersec_profils_intermediaires[ind_profil + 2].asPoint()
                 inters_courant = liste_intersec_profils_intermediaires[ind_profil + 1].asPoint()
-                x1 = inters_prec.x()
-                y1 = inters_prec.y()
-                x2 = inters_suiv.x()
-                y2 = inters_suiv.y()
-                x3 = inters_courant.x()
-                y3 = inters_courant.y()
-                # y = coeff_A * x + coeff_B est l'équation de la droite perpendiculaire à X1-X2 passant par X3
-                coeff_A = (x2 - x1) / (y1 - y2)
-                coeff_B = y3 - x3 * ((x2 - x1) / (y1 - y2))
-                # linestart et lineend sont les 2 extrémités de la polyligne perpendiculaire à X1-X2 passant par X3
-                if coeff_A < -1:
-                    y_start = y3 + 500
-                    x_start = (y_start - coeff_B) / coeff_A
-                    y_end = y3 - 500
-                    x_end = (y_end - coeff_B) / coeff_A
-                    new_feature = QgsFeature(couche_profils.fields())
-                    new_feature.setAttribute('name', 'interp_' + str(ind_profil))
-                    new_feature.setAttribute('active', True)
-                    new_feature.setAttribute('struct', 0)
-                    new_feature.setGeometry(QgsGeometry.fromPolylineXY([QgsPointXY(x_start, y_start), QgsPointXY(x_end, y_end)]))
-                    nouveaux_profils.append(new_feature)
-                    self.mgis.add_info("Cas 1")
-                elif coeff_A <= 0 and coeff_A >= -1:
-                    x_start = x3 + 500
-                    y_start = coeff_A *  x_start + coeff_B
-                    x_end = x3 - 500
-                    y_end = coeff_A *  x_end + coeff_B
-                    new_feature = QgsFeature(couche_profils.fields())
-                    new_feature.setAttribute('name', 'interp_' + str(ind_profil))
-                    new_feature.setAttribute('active', True)
-                    new_feature.setAttribute('struct', 0)
-                    new_feature.setGeometry(QgsGeometry.fromPolylineXY([QgsPointXY(x_start, y_start), QgsPointXY(x_end, y_end)]))
-                    nouveaux_profils.append(new_feature)
-                    self.mgis.add_info("Cas 2")
-                elif coeff_A > 0 and coeff_A <= 1:
-                    x_start = x3 + 500
-                    y_start = coeff_A *  x_start + coeff_B
-                    x_end = x3 - 500
-                    y_end = coeff_A *  x_end + coeff_B
-                    new_feature = QgsFeature(couche_profils.fields())
-                    new_feature.setAttribute('name', 'interp_' + str(ind_profil))
-                    new_feature.setAttribute('active', True)
-                    new_feature.setAttribute('struct', 0)
-                    new_feature.setGeometry(QgsGeometry.fromPolylineXY([QgsPointXY(x_start, y_start), QgsPointXY(x_end, y_end)]))
-                    nouveaux_profils.append(new_feature)
-                    self.mgis.add_info("Cas 3")
-                elif coeff_A > 1:
-                    y_start = y3 + 500
-                    x_start = (y_start - coeff_B) / coeff_A
-                    y_end = y3 - 500
-                    x_end = (y_end - coeff_B) / coeff_A
-                    new_feature = QgsFeature(couche_profils.fields())
-                    new_feature.setAttribute('name', 'interp_' + str(ind_profil))
-                    new_feature.setAttribute('active', True)
-                    new_feature.setAttribute('struct', 0)
-                    new_feature.setGeometry(QgsGeometry.fromPolylineXY([QgsPointXY(x_start, y_start), QgsPointXY(x_end, y_end)]))
-                    nouveaux_profils.append(new_feature)
-                    self.mgis.add_info("Cas 4")
-                self.mgis.add_info(str(new_feature.geometry()))
-                self.mgis.add_info(str(new_feature))
-            # Calcul des intersections avec les rives droite et gauche
-            for profil_etendu in nouveaux_profils:
+                x_start, y_start, x_end, y_end = ortho_line(inters_prec, inters_suiv, inters_courant, largeur_vallee)
+                # Préparation de la géométrie de chaque profil interpolé
+                new_feature = QgsFeature(couche_profils.fields())
+                new_feature.setAttribute('name', 'interp_' + str(ind_profil))
+                new_feature.setAttribute('active', True)
+                new_feature.setAttribute('struct', 0)
+                new_feature.setGeometry(QgsGeometry.fromPolylineXY([QgsPointXY(x_start, y_start), QgsPointXY(x_end, y_end)]))
+                nouveaux_profils['profils'].append(new_feature)
+                nouveaux_profils['abscisses'].append(inters_courant)
+
+            # Troncature des profils au niveau des rives droite et gauche
+            for index, profil_etendu in enumerate(nouveaux_profils['profils']):
                 start_line_gauche = profil_etendu.geometry().intersection(geom_rg)
                 start_line_droite = profil_etendu.geometry().intersection(geom_rd)
+                if start_line_gauche.isMultipart():
+                    multigeom = start_line_gauche.asGeometryCollection()
+                    self.mgis.add_info("Multipart")
+                    self.mgis.add_info(str(multigeom))
+                    plus_courte_distance = 2 * largeur_vallee
+                    for element in multigeom:
+                        intersec_branche = nouveaux_profils['abscisses'][index]
+                        distance_element = element.asPoint().distance(intersec_branche.x(), intersec_branche.y())
+                        if distance_element < plus_courte_distance:
+                            start_line_gauche = element
+                            plus_courte_distance = distance_element
+                if start_line_droite.isMultipart():
+                    multigeom = start_line_droite.asGeometryCollection()
+                    plus_courte_distance = 2 * largeur_vallee
+                    for element in multigeom:
+                        intersec_branche = nouveaux_profils['abscisses'][index]
+                        distance_element = element.asPoint().distance(intersec_branche.x(), intersec_branche.y())
+                        if distance_element < plus_courte_distance:
+                            start_line_droite = element
+                            plus_courte_distance = distance_element
                 profil_etendu.setGeometry(QgsGeometry.fromPolylineXY([start_line_gauche.asPoint(), start_line_droite.asPoint()]))
+            
             # Une fois tous les profils intermédiaires construits, on les ajoute à la couche profiles
-            (res, outFeats) = couche_profils.dataProvider().addFeatures(nouveaux_profils)
+            (res, outFeats) = couche_profils.dataProvider().addFeatures(nouveaux_profils['profils'])
 
         try:  # qgis2
             couche_profils.saveEdits()
