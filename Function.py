@@ -21,6 +21,7 @@ import math
 import os
 import dateutil
 from shutil import copy2
+from qgis.core import *
 
 
 def data_to_float(txt):
@@ -343,3 +344,54 @@ def ortho_line(inters_prec, inters_suiv, inters_courant, largeur_vallee):
         y_end = y3 - largeur_vallee
         x_end = (y_end - coeff_B) / coeff_A
     return x_start, y_start, x_end, y_end
+
+def vertex_add(geom, couche, feat_id, x, y, tol=0.01):
+    p1, at, b1, after, d1 = geom.closestVertex(QgsPointXY(x, y))
+    dist, p2, to, _ = geom.closestSegmentWithContext(QgsPointXY(x, y))
+    if at == 0:
+        if dist < tol:
+            # insert into first segment
+            couche.insertVertex(x, y, feat_id, after)
+            geom.insertVertex(x, y, after)
+        else:
+            # insert before first vertex
+            couche.insertVertex(x, y, feat_id, 0)
+            geom.insertVertex(x, y, 0)
+    elif after == -1:
+        if dist < tol:
+            # insert after last vertex
+            couche.insertVertex(x, y, feat_id, at)
+            geom.insertVertex(x, y, at)
+        else:
+            # insert into last segment
+            couche.insertVertex(x, y, feat_id, at - 1)
+            geom.insertVertex(x, y, at - 1)
+    return geom
+
+def tronque_profil(x_str, z_str, dist_rg, dist_rd):
+    flag_rg = False
+    flag_rd = False
+    x_tronque = []
+    z_tronque = []
+    for i, xx in enumerate(x_str):
+        x = float(xx)
+        if x < dist_rg:
+            pass
+        elif x >= dist_rg and x <= dist_rd:
+            if x == dist_rg or flag_rg:
+                x_tronque.append(x)
+                z_tronque.append(float(z_str[i]))
+                flag_rg = True
+            elif x == dist_rd:
+                x_tronque.append(x)
+                z_tronque.append(float(z_str[i]))
+                flag_rd = True
+            else:
+                x_tronque.append(dist_rg)
+                z_tronque.append((dist_rg - float(x_str[i - 1])) * (float(z_str[i]) - float(z_str[i - 1])) / (x - float(x_str[i - 1])) + float(z_str[i - 1]))
+                flag_rg = True
+        elif x > dist_rd and not flag_rd:
+            x_tronque.append(dist_rd)
+            z_tronque.append((dist_rd - float(x_str[i - 1])) * (float(z_str[i]) - float(z_str[i - 1])) / (x - float(x_str[i - 1])) + float(z_str[i - 1]))
+            flag_rd = True
+    return x_tronque, z_tronque

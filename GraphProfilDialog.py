@@ -44,7 +44,7 @@ from qgis.PyQt.uic import *
 from qgis.core import *
 from qgis.gui import *
 
-from .Function import isfloat, interpole, ortho_line
+from .Function import isfloat, interpole, ortho_line, vertex_add, tronque_profil
 from .GraphCommon import DraggableLegend, GraphCommon
 from .Structure.StructureCreateDialog import ClassStructureCreateDialog
 from .GraphResultDialog import GraphResultDialog
@@ -641,22 +641,43 @@ class GraphProfil(GraphCommon):
                 geom_rg = geom
         
         # 1- Identification des profils qui intersectent rive gauche et rive droite
-        self.mgis.add_info("Itération sur les profils")
+        self.mgis.add_info("1- Identification des profils qui intersectent rive gauche et rive droite")
+        couche_profils.startEditing()
         if riveGauche.isSpatial() and riveDroite.isSpatial() and couche_profils.isSpatial():
             abscisses_profils = []
             for profil in couche_profils.getFeatures():
                 inter_rd = profil.geometry().intersection(geom_rd)
-                if not inter_rd.isEmpty():
-                    self.mgis.add_info(str(profil.attribute("name")))
-                    self.mgis.add_info("Abscisse : " + str(profil['abscissa']))
-                    abscisses_profils.append(profil['abscissa'])
-                    self.mgis.add_info("Intersection rive droite : " + str(inter_rd))
-                
                 inter_rg = profil.geometry().intersection(geom_rg)
-                if not inter_rg.isEmpty():
-                    self.mgis.add_info("Intersection rive gauche : " + str(inter_rg) + "\n")
+                if not inter_rd.isEmpty() and not inter_rg.isEmpty():
+                    profil.setGeometry(vertex_add(profil.geometry(), couche_profils, profil.id(), inter_rd.asPoint().x(), inter_rd.asPoint().y(), tol=0.015))
+                    profil.setGeometry(vertex_add(profil.geometry(), couche_profils, profil.id(), inter_rg.asPoint().x(), inter_rg.asPoint().y(), tol=0.015))
+                    p, indV_inter_rd, bv, av, d = profil.geometry().closestVertex(inter_rd.asPoint())
+                    dist_inter_rd = profil.geometry().distanceToVertex(indV_inter_rd)
+                    p, indV_inter_rg, bv, av, d = profil.geometry().closestVertex(inter_rg.asPoint())
+                    dist_inter_rg = profil.geometry().distanceToVertex(indV_inter_rg)
+                    self.mgis.add_info("Distance à l'intersection RG : " + str(dist_inter_rg))
+                    self.mgis.add_info("Distance à l'intersection RD : " + str(dist_inter_rd) + "\n")
+                    self.mgis.add_info(str(profil.attribute("name")) + " ----- Abscisse : " + str(profil['abscissa']))
+                    if len(profil.attribute("x")) > 0 and len(profil.attribute("z")) > 0:
+                        x_str = profil.attribute("x").split(" ")
+                        z_str = profil.attribute("z").split(" ")
+                        x_tronque, z_tronque = tronque_profil(x_str, z_str, dist_inter_rg, dist_inter_rd)
+                        self.mgis.add_info("Avant troncature")
+                        self.mgis.add_info(str(x_str))
+                        self.mgis.add_info("Après troncature")
+                        self.mgis.add_info(str(x_tronque) + "\n")
+                        self.mgis.add_info("Avant troncature")
+                        self.mgis.add_info(str(z_str))
+                        self.mgis.add_info("Avant troncature")
+                        self.mgis.add_info(str(z_tronque))
+                    abscisses_profils.append(profil['abscissa'])
 
-        self.mgis.add_info(str(abscisses_profils))
+        try:  # qgis2
+            couche_profils.saveEdits()
+        except:  # qgis 3
+            couche_profils.commitChanges()
+        
+        self.mgis.add_info("\n")
 
         if len(abscisses_profils) > 0:
             abs_premier_profil = abscisses_profils[0]
@@ -671,6 +692,7 @@ class GraphProfil(GraphCommon):
                 abs_premier_profil = abscisse_profil
 
         # 2- Identification des principales caractéristiques de la branche concernée [limitation : 1 seule branche peut être concernée]
+        self.mgis.add_info("2- Identification des principales caractéristiques de la branche concernée [limitation : 1 seule branche peut être concernée]")
         features = couche_branche.getFeatures()
         nbrBranchesConcernees = 0
         for feature in features:
@@ -695,16 +717,19 @@ class GraphProfil(GraphCommon):
         elif nbrBranchesConcernees > 1:
             self.mgis.add_info("Trop de branches concernées, restreindre la délimitation des berges du lit mineur à une seule branche")
         else: # 3- Calcul des points d'intersection des profils interpolés avec la branche
+            self.mgis.add_info("3- Calcul des points d'intersection des profils interpolés avec la branche")
             liste_intersec_profils_intermediaires = []
-            self.mgis.add_info("Coordonnées des intersections des profils intermédiaires avec la branche")
             for pos_curv_branch in np.arange(abs_premier_profil - abs_debut, abs_dernier_profil - abs_debut, maillage):
                 point = axe_branche.interpolate(pos_curv_branch)
                 liste_intersec_profils_intermediaires.append(point)
         
+        # 4- Création des profils dans la couche profiles
+        self.mgis.add_info("4- Création des profils dans la couche profiles")
         couche_profils.startEditing()
         nouveaux_profils = {}
         nouveaux_profils['profils'] = []
         nouveaux_profils['abscisses'] = []
+        nouveaux_profils['mnt'] = []
         if len(liste_intersec_profils_intermediaires) > 0:
             segments_intersection = []
             for ind_profil in range(len(liste_intersec_profils_intermediaires) - 2):
@@ -720,15 +745,17 @@ class GraphProfil(GraphCommon):
                 new_feature.setGeometry(QgsGeometry.fromPolylineXY([QgsPointXY(x_start, y_start), QgsPointXY(x_end, y_end)]))
                 nouveaux_profils['profils'].append(new_feature)
                 nouveaux_profils['abscisses'].append(inters_courant)
+                nouveaux_profils['mnt'].append({'rg': 0, 'rd': 0})
 
             # Troncature des profils au niveau des rives droite et gauche
+            raster = QgsProject.instance().mapLayersByName('S17_22_seuil')[0]
+            if isinstance(raster, QgsRasterLayer):
+	            raster_provider = raster.dataProvider()
             for index, profil_etendu in enumerate(nouveaux_profils['profils']):
                 start_line_gauche = profil_etendu.geometry().intersection(geom_rg)
                 start_line_droite = profil_etendu.geometry().intersection(geom_rd)
                 if start_line_gauche.isMultipart():
                     multigeom = start_line_gauche.asGeometryCollection()
-                    self.mgis.add_info("Multipart")
-                    self.mgis.add_info(str(multigeom))
                     plus_courte_distance = 2 * largeur_vallee
                     for element in multigeom:
                         intersec_branche = nouveaux_profils['abscisses'][index]
@@ -745,8 +772,17 @@ class GraphProfil(GraphCommon):
                         if distance_element < plus_courte_distance:
                             start_line_droite = element
                             plus_courte_distance = distance_element
+                
+                # Identification des valeurs du MNT au niveau des rives
+                ident = raster_provider.identify(start_line_gauche.asPoint(), QgsRaster.IdentifyFormatValue).results()
+                if ident[1]:
+                    nouveaux_profils['mnt'][index]['rg'] = ident[1]
+                ident = raster_provider.identify(start_line_droite.asPoint(), QgsRaster.IdentifyFormatValue).results()
+                if ident[1]:
+                    nouveaux_profils['mnt'][index]['rd'] = ident[1]
+                # Création de la géométrie tronquée aux rives
                 profil_etendu.setGeometry(QgsGeometry.fromPolylineXY([start_line_gauche.asPoint(), start_line_droite.asPoint()]))
-            
+
             # Une fois tous les profils intermédiaires construits, on les ajoute à la couche profiles
             (res, outFeats) = couche_profils.dataProvider().addFeatures(nouveaux_profils['profils'])
 
