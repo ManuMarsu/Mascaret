@@ -22,6 +22,7 @@ import os
 import dateutil
 from shutil import copy2
 from qgis.core import *
+import numpy as np
 
 
 def data_to_float(txt):
@@ -395,3 +396,56 @@ def tronque_profil(x_str, z_str, dist_rg, dist_rd):
             z_tronque.append((dist_rd - float(x_str[i - 1])) * (float(z_str[i]) - float(z_str[i - 1])) / (x - float(x_str[i - 1])) + float(z_str[i - 1]))
             flag_rd = True
     return x_tronque, z_tronque
+
+def calcul_planim_sh(ref_plani, x_z):
+    # Il faut d'abord s'assurer que x_z est trié dans l'ordre croissant
+    ref_sh = np.zeros(np.shape(ref_plani)[0])
+    if len(ref_plani) > 1:
+        pas_plani = ref_plani[1] - ref_plani[0]
+        for i in range(len(x_z) - 1):
+            d1 = x_z[i][0] # distance
+            z1 = x_z[i][1] # cote
+            d2 = x_z[i+1][0]
+            z2 = x_z[i+1][1]
+            en_eau = False
+            for ip, p in enumerate(ref_plani):
+                if en_eau:
+                    sh_cur = math.fabs(d2 - d1) * pas_plani
+                elif (p + pas_plani) <= z1 and (p + pas_plani) <= z2:
+                    sh_cur = 0
+                else:
+                    sh_cur = (p + pas_plani - max(z1, z2)) * (d2 - d1) + (math.fabs(z2 - z1) * (d2 - d1) * 0.5)
+                    en_eau = True
+                ref_sh[ip] += sh_cur
+    return ref_sh
+
+def tri_pt_profils(x_z_t, ordre_croissant):
+    left = []
+    equal = []
+    right = []
+    if ordre_croissant:
+        if len(x_z_t) > 1:
+            pivot = x_z_t[0][0]
+            for i, x in enumerate(x_z_t):
+                if x[0] < pivot:
+                    left.append([x_z_t[i][0], x_z_t[i][1]])
+                elif x[0] == pivot:
+                    equal.append([x_z_t[i][0], x_z_t[i][1]])
+                elif x[0] > pivot:
+                    right.append([x_z_t[i][0], x_z_t[i][1]])
+            return tri_pt_profils(left, ordre_croissant) + equal + tri_pt_profils(right, ordre_croissant)
+        else:
+            return x_z_t
+    else: # Ordre décroissant
+        if len(x_z_t) > 1:
+            pivot = x_z_t[0][0]
+            for i, x in enumerate(x_z_t):
+                if x[0] > pivot:
+                    left.append([x_z_t[i][0], x_z_t[i][1]])
+                elif x[0] == pivot:
+                    equal.append([x_z_t[i][0], x_z_t[i][1]])
+                elif x[0] < pivot:
+                    right.append([x_z_t[i][0], x_z_t[i][1]])
+            return tri_pt_profils(left, ordre_croissant) + equal + tri_pt_profils(right, ordre_croissant)
+        else:
+            return x_z_t
