@@ -44,7 +44,7 @@ from qgis.PyQt.uic import *
 from qgis.core import *
 from qgis.gui import *
 
-from .Function import isfloat, interpole, ortho_line, vertex_add, tronque_profil, calcul_planim_sh, tri_pt_profils
+from .Function import isfloat, interpole, ortho_line, vertex_add, tronque_profil, calcul_planim_sh, tri_pt_profils, creation_profils
 from .GraphCommon import DraggableLegend, GraphCommon
 from .Structure.StructureCreateDialog import ClassStructureCreateDialog
 from .GraphResultDialog import GraphResultDialog
@@ -737,18 +737,22 @@ class GraphProfil(GraphCommon):
         else: # 3- Calcul des points d'intersection des profils interpolés avec la branche
             self.mgis.add_info("3- Calcul des points d'intersection des profils interpolés avec la branche")
             liste_intersec_profils_intermediaires = []
+            abscisses_nouveaux_profils = []
             for pos_curv_branch in np.arange(abs_premier_profil - abs_debut, abs_dernier_profil - abs_debut, maillage):
                 point = axe_branche.interpolate(pos_curv_branch)
                 liste_intersec_profils_intermediaires.append(point)
+                abscisses_nouveaux_profils.append(pos_curv_branch + abs_debut)
         
         # 4- Création des profils dans la couche profiles
         self.mgis.add_info("4- Création des profils dans la couche profiles")
         couche_profils.startEditing()
         nouveaux_profils = {}
         nouveaux_profils['profils'] = [] # Liste de QgsFeature
-        nouveaux_profils['abscisses'] = [] # Liste de float
+        nouveaux_profils['inters_br'] = [] # Liste de QgsPoint (intersection du profil avec la branche)
+        nouveaux_profils['absc'] = [] # Liste de float (abscisse du profil)
         nouveaux_profils['mnt'] = [] # Liste de dictionnaires {'rg': 0, 'rd': 0}
         nouveaux_profils['geom'] = [] # liste de dictionnaires {'miroir': 0}
+        nouveaux_profils['mat_planim'] = [] # Liste de tableaux numpy (planimétrage de la section hydraulique du profil)
         if len(liste_intersec_profils_intermediaires) > 0:
             segments_intersection = []
             for ind_profil in range(len(liste_intersec_profils_intermediaires) - 2):
@@ -763,7 +767,8 @@ class GraphProfil(GraphCommon):
                 new_feature.setAttribute('struct', 0)
                 new_feature.setGeometry(QgsGeometry.fromPolylineXY([QgsPointXY(x_start, y_start), QgsPointXY(x_end, y_end)]))
                 nouveaux_profils['profils'].append(new_feature)
-                nouveaux_profils['abscisses'].append(inters_courant)
+                nouveaux_profils['inters_br'].append(inters_courant)
+                nouveaux_profils['absc'].append(abscisses_nouveaux_profils[ind_profil])
                 nouveaux_profils['mnt'].append({'rg': 0, 'rd': 0})
                 nouveaux_profils['geom'].append({'miroir': 0})
 
@@ -778,7 +783,7 @@ class GraphProfil(GraphCommon):
                     multigeom = start_line_gauche.asGeometryCollection()
                     plus_courte_distance = 2 * largeur_vallee
                     for element in multigeom:
-                        intersec_branche = nouveaux_profils['abscisses'][index]
+                        intersec_branche = nouveaux_profils['inters_br'][index]
                         distance_element = element.asPoint().distance(intersec_branche.x(), intersec_branche.y())
                         if distance_element < plus_courte_distance:
                             start_line_gauche = element
@@ -787,7 +792,7 @@ class GraphProfil(GraphCommon):
                     multigeom = start_line_droite.asGeometryCollection()
                     plus_courte_distance = 2 * largeur_vallee
                     for element in multigeom:
-                        intersec_branche = nouveaux_profils['abscisses'][index]
+                        intersec_branche = nouveaux_profils['inters_br'][index]
                         distance_element = element.asPoint().distance(intersec_branche.x(), intersec_branche.y())
                         if distance_element < plus_courte_distance:
                             start_line_droite = element
@@ -811,7 +816,8 @@ class GraphProfil(GraphCommon):
             # A ce stade, on a construit la géométrie entre rives de chacun des profils interpolés et on connait leurs caractéristiques respectives :
             # - nouveaux_profils['geom'][index]['miroir'] : largeur au miroir
             # - nouveaux_profils['mnt'][index]['rg / rd'] : valeur du lidar aux extrémités du profil
-            # - nouveaux_profils['abscisses'][index] : abscisse relative du profil le long de la branche
+            # - nouveaux_profils['inters_br'][index] : QgsPoint de l'intersection avec la branche
+            # - nouveaux_profils['absc'][index] : abscisse curviligne du profil le long de la branche
             # - nouveaux_profils['profils'][index] : QgsFeature avec les données remplies, sauf attributs 'x' et 'z'
 
             ref_plani = np.arange(z_min, z_max + planimetrage, planimetrage)
@@ -827,9 +833,9 @@ class GraphProfil(GraphCommon):
 
             # Calcul du planimétrage de chaque profil source
             for iprof, prof_sourc_elem in enumerate(profils_source):
-                self.mgis.add_info(prof_sourc_elem['nom'])
-                self.mgis.add_info("Avant complétude : " + str(prof_sourc_elem['dist_cote'][0]) + "\n" + str(prof_sourc_elem['dist_cote'][1]))
-                # On parcours chacun des points du profil et on regarde à chaque fois s'il y a lieu d'insérer un point du planimétrage
+                #self.mgis.add_info(prof_sourc_elem['nom'])
+                #self.mgis.add_info("Avant complétude : " + str(prof_sourc_elem['dist_cote'][0]) + "\n" + str(prof_sourc_elem['dist_cote'][1]))
+                # On parcoure chacun des points du profil et on regarde à chaque fois s'il y a lieu d'insérer un point du planimétrage
                 x_z = []
                 for absc in range(len((prof_sourc_elem['dist_cote'][0])) - 1):
                     d1 = prof_sourc_elem['dist_cote'][0][absc] # distance
@@ -863,17 +869,47 @@ class GraphProfil(GraphCommon):
                         if not z1_inscrit:
                             x_z.append([d1, z1])
                             z1_inscrit = True
-                self.mgis.add_info("Après complétude : " + str(x_z))
+                #self.mgis.add_info("Après complétude : " + str(x_z))
                 profils_source[iprof]['mat_planim'] = calcul_planim_sh(ref_plani, x_z) # tableau numpy de planimétrage de la section hydraulique, même dimension que ref_plani
-                self.mgis.add_info(str(profils_source[iprof]['mat_planim']))
+                #self.mgis.add_info(str(profils_source[iprof]['mat_planim']))
+            
+            # Calcul des sections hydrauliques planimétrées interpolées
+            profil_aval = profils_source[0]
+            profil_amont = profils_source[len(profils_source) - 1]
+
+            semis_interp_lit_mineur = QgsProject.instance().mapLayersByName('semis_interp_lit_mineur')[0]
+            semis_interp_lit_mineur.startEditing()
+            pts_lit_mineur = []
+            for index in range(len(nouveaux_profils['profils'])):
+                coef_a = (nouveaux_profils['absc'][index] - profil_amont['absc']) / (profil_aval['absc'] - profil_amont['absc'])
+                nouveaux_profils['mat_planim'].append(coef_a * (profil_aval['mat_planim'] - profil_amont['mat_planim']) + profil_amont['mat_planim'])
+                #self.mgis.add_info(str(index) + " : " + str(nouveaux_profils['mat_planim'][index]))
+                #self.mgis.add_info(str(index) + " : " + str(nouveaux_profils['geom'][index]['miroir']))
+                x, z, x_z = creation_profils(ref_plani, nouveaux_profils['mat_planim'][index], nouveaux_profils['geom'][index]['miroir'] / 2, nouveaux_profils['mnt'][index]['rg'], nouveaux_profils['mnt'][index]['rd'])
+                nouveaux_profils['profils'][index].setAttribute('x', x)
+                nouveaux_profils['profils'][index].setAttribute('z', z)
+
+                # - nouveaux_profils['mnt'][index]['rg / rd'] : valeur du lidar aux extrémités du profil
+                trace_profil = nouveaux_profils['profils'][index].geometry()
+                for vertex in enumerate(x_z):
+                    new_feat = QgsFeature(semis_interp_lit_mineur.fields())
+                    new_feat.setAttribute('alti', str(vertex[1]))
+                    new_feat.setGeometry(trace_profil.interpolate(vertex[0]))
+                    pts_lit_mineur.append(new_feat)
+            
 
             # Une fois tous les profils intermédiaires construits, on les ajoute à la couche profiles
             (res, outFeats) = couche_profils.dataProvider().addFeatures(nouveaux_profils['profils'])
-
-        try:  # qgis2
-            couche_profils.saveEdits()
-        except:  # qgis 3
+            (res, outFeats) = semis_interp_lit_mineur.dataProvider().addFeatures(pts_lit_mineur)
             couche_profils.commitChanges()
+            semis_interp_lit_mineur.commitChanges()
+
+#        try:  # qgis2
+#            couche_profils.saveEdits()
+#            semis_interp_lit_mineur.saveEdits()
+#        except:  # qgis 3
+#            couche_profils.commitChanges()
+#            semis_interp_lit_mineur.commitChanges()
 
     def import_topo(self):
         if int(qVersion()[0]) < 5:  # qt4

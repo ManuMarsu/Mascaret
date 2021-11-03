@@ -449,3 +449,37 @@ def tri_pt_profils(x_z_t, ordre_croissant):
             return tri_pt_profils(left, ordre_croissant) + equal + tri_pt_profils(right, ordre_croissant)
         else:
             return x_z_t
+
+def creation_profils(ref_plani, planim, dist_centre_profil, max_rg, max_rd): 
+    # ref_plani est le tableau des altitudes planimétrées
+    # planim est un tableau numpy avec le planimétrage du profil à créer
+    # dist_centre_profil donne la valeur sur laquelle centrer le profil à créer
+    x_gauche = ""
+    z_gauche = ""
+    x_droite = ""
+    z_droite = ""
+    x_z_gauche = []
+    x_z_droite = []
+    nbr_pas = len(ref_plani)
+    pas = ref_plani[1] - ref_plani[0]
+    miroir_p = planim[nbr_pas - 1] / pas
+    for indice in range(nbr_pas):
+        if indice == 0:
+            esp = ""
+        else:
+            esp = " "
+        i = nbr_pas - indice - 1
+        zg = min(ref_plani[i], max_rg)
+        zd = min(ref_plani[i], max_rd)
+        miroir = (2 * planim[i]) / (3 * pas) + (miroir_p / 3)
+        miroir_p = miroir
+        if miroir > 0:
+            x_gauche += str(dist_centre_profil - (miroir / 2)) + " "
+            z_gauche += str(zg) + " "
+            x_z_gauche.append([dist_centre_profil - (miroir / 2), zg])
+            x_droite = str(dist_centre_profil + (miroir / 2)) + esp + x_droite
+            z_droite = str(zd) + esp + z_droite
+            x_z_droite = [[dist_centre_profil + (miroir / 2), zd]] + x_z_droite
+        else:
+            break
+    return x_gauche + x_droite, z_gauche + z_droite, x_z_gauche + x_z_droite
