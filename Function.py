@@ -400,7 +400,7 @@ def tronque_profil(x_str, z_str, dist_rg, dist_rd):
 def calcul_planim_sh(ref_plani, x_z):
     # Il faut d'abord s'assurer que x_z est trié dans l'ordre croissant
     ref_sh = np.zeros(np.shape(ref_plani)[0])
-    if len(ref_plani) > 1:
+    if np.shape(ref_plani)[0] > 1:
         pas_plani = ref_plani[1] - ref_plani[0]
         for i in range(len(x_z) - 1):
             d1 = x_z[i][0] # distance
@@ -409,15 +409,17 @@ def calcul_planim_sh(ref_plani, x_z):
             z2 = x_z[i+1][1]
             en_eau = False
             for ip, p in enumerate(ref_plani):
+                sh_cur = 0
                 if en_eau:
-                    sh_cur = math.fabs(d2 - d1) * pas_plani
+                    sh_cur = (d2 - d1) * pas_plani
                 elif (p + pas_plani) <= z1 and (p + pas_plani) <= z2:
                     sh_cur = 0
                 else:
                     sh_cur = (p + pas_plani - max(z1, z2)) * (d2 - d1) + (math.fabs(z2 - z1) * (d2 - d1) * 0.5)
                     en_eau = True
-                ref_sh[ip] += sh_cur
-    return ref_sh
+                ref_sh[ip] += round(sh_cur * 1000) / 1000
+    ref_sh2 = np.around(ref_sh, decimals=3)
+    return ref_sh2
 
 def tri_pt_profils(x_z_t, ordre_croissant):
     left = []
@@ -473,13 +475,44 @@ def creation_profils(ref_plani, planim, dist_centre_profil, max_rg, max_rd):
         zd = min(ref_plani[i], max_rd)
         miroir = (2 * planim[i]) / (3 * pas) + (miroir_p / 3)
         miroir_p = miroir
-        if miroir > 0:
-            x_gauche += str(dist_centre_profil - (miroir / 2)) + " "
-            z_gauche += str(zg) + " "
-            x_z_gauche.append([dist_centre_profil - (miroir / 2), zg])
-            x_droite = str(dist_centre_profil + (miroir / 2)) + esp + x_droite
-            z_droite = str(zd) + esp + z_droite
-            x_z_droite = [[dist_centre_profil + (miroir / 2), zd]] + x_z_droite
+        if miroir > 0 and planim[i] > 0:
+            if ref_plani[i] <= max_rg:
+                x_gauche += str(dist_centre_profil - (miroir / 2)) + " "
+                z_gauche += str(zg) + " "
+                x_z_gauche.append([dist_centre_profil - (miroir / 2), zg])
+            if ref_plani[i] <= max_rd:
+                x_droite = str(dist_centre_profil + (miroir / 2)) + esp + x_droite
+                z_droite = str(zd) + esp + z_droite
+                x_z_droite = [[dist_centre_profil + (miroir / 2), zd]] + x_z_droite
         else:
             break
     return x_gauche + x_droite, z_gauche + z_droite, x_z_gauche + x_z_droite
+
+def tri_profils(profils_source):
+    left = []
+    equal = []
+    right = []
+    if len(profils_source) > 1:
+        pivot = profils_source[0]['absc']
+        for profil in profils_source:
+            if profil['absc'] < pivot:
+                left.append(profil)
+            elif profil['absc'] == pivot:
+                equal.append(profil)
+            elif profil['absc'] > pivot:
+                right.append(profil)
+        return tri_profils(left) + equal + tri_profils(right)
+    else:
+        return profils_source
+
+def profils_amont_aval(abscisse, profils_source):
+    profils_source_tries = tri_profils(profils_source)
+    profil_amont = profils_source[0]
+    profil_aval = profils_source[1]
+    trouve = False
+    for indice in range(len(profils_source_tries) - 1):
+        if abscisse >= profils_source_tries[indice]['absc'] and abscisse <= profils_source_tries[indice + 1]['absc']:
+            profil_amont = profils_source_tries[indice]
+            profil_aval = profils_source_tries[indice + 1]
+            trouve = True
+    return trouve, profil_amont, profil_aval
