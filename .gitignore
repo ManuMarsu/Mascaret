@@ -6,7 +6,6 @@ bin/*
 bin
 *.pyc
 .idea/workspace.xml
-settings.json
 .idea/*
 
 toto*
