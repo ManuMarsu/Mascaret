@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_frm_main(object):
     def setupUi(self, frm_main):
         frm_main.setObjectName("frm_main")
-        frm_main.resize(635, 947)
+        frm_main.resize(639, 956)
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(frm_main)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.frm_mode = QtWidgets.QFrame(frm_main)
