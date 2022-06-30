@@ -37,10 +37,12 @@ class ClassMNT(QObject):
         self.facteur = facteur
         self.mnt = {}
 
+    @staticmethod
+    def fct1(x, arrondi = 2):
+        """around"""
+        return round(float(x),  arrondi)
+
     def run(self):
-
-        # try:
-
         features = self.profil.selectedFeatures()
         self.profil.startEditing()
 
@@ -71,7 +73,7 @@ class ClassMNT(QObject):
 
                     if ident[1]:
                         feature["xmnt"] += " " + str(dist)
-                        feature["zmnt"] += " " + str(ident[1] / self.facteur)
+                        feature["zmnt"] += " " + str(self.fct1(ident[1] / self.facteur, arrondi=3))
                 self.profil.updateFeature(feature)
 
                 if len(feature["zmnt"]) > 0:
