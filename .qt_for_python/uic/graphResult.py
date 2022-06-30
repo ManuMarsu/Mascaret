@@ -48,7 +48,7 @@ class Ui_frm_main(object):
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.lw_graph = QtWidgets.QListWidget(self.tb_compar)
-        self.lw_graph.setGridSize(QtCore.QSize(0, 20))
+        self.lw_graph.setGridSize(QtCore.QSize(0, 22))
         self.lw_graph.setUniformItemSizes(True)
         self.lw_graph.setObjectName("lw_graph")
         self.horizontalLayout.addWidget(self.lw_graph)
