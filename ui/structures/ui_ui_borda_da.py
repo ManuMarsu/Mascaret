@@ -238,7 +238,7 @@ class Ui_Form(object):
         self.verticalLayout.addWidget(self.clas_met)
 
         self.retranslateUi(Form)
-        self.clas_met.setCurrentIndex(1)
+        self.clas_met.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):

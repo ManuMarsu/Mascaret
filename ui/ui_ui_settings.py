@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Settings(object):
     def setupUi(self, Settings):
         Settings.setObjectName("Settings")
-        Settings.resize(620, 473)
+        Settings.resize(620, 466)
         Settings.setSizeGripEnabled(False)
         Settings.setModal(True)
         self.gridLayout = QtWidgets.QGridLayout(Settings)
@@ -66,6 +66,10 @@ class Ui_Settings(object):
         self.debugModeChbox = QtWidgets.QCheckBox(self.groupBox_3)
         self.debugModeChbox.setObjectName("debugModeChbox")
         self.verticalLayout_8.addWidget(self.debugModeChbox)
+        self.taskQChbox = QtWidgets.QCheckBox(self.groupBox_3)
+        self.taskQChbox.setChecked(True)
+        self.taskQChbox.setObjectName("taskQChbox")
+        self.verticalLayout_8.addWidget(self.taskQChbox)
         self.gridLayout.addWidget(self.groupBox_3, 0, 0, 1, 1)
         self.buttonBox = QtWidgets.QDialogButtonBox(Settings)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -96,5 +100,6 @@ class Ui_Settings(object):
         self.open_lastChbox_schema.setText(_translate("Settings", "Load last schema when starting"))
         self.apiChbox.setText(_translate("Settings", "Use Mascaret API"))
         self.debugModeChbox.setText(_translate("Settings", "Debugging mode"))
+        self.taskQChbox.setText(_translate("Settings", "Using taskmanager for the run"))
         self.actionBt_pathPostgres.setText(_translate("Settings", "bt_pathPostgres"))
         self.actionTxt_path_postgres.setText(_translate("Settings", "txt_path_postgres"))
