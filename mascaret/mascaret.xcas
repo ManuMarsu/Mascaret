@@ -2,7 +2,7 @@
   <parametresCas>
     <parametresGeneraux>
       <versionCode>3</versionCode>
-      <code>2</code>
+      <code>1</code>
       <fichMotsCles>mascaret.xcas</fichMotsCles>
       <dictionaire>dico.txt</dictionaire>
       <progPrincipal>princi.f</progPrincipal>
@@ -41,7 +41,7 @@
     <parametresTemporels>
       <pasTemps>360.0</pasTemps>
       <tempsInit>0.0</tempsInit>
-      <critereArret>1</critereArret>
+      <critereArret>2</critereArret>
       <nbPasTemps>2</nbPasTemps>
       <tempsMax>4003200.0</tempsMax>
       <pasTempsVar>false</pasTempsVar>
@@ -59,8 +59,8 @@
       <listeBranches>
         <nb>6</nb>
         <numeros>1 2 3 4 5 6</numeros>
-        <abscDebut>23.76 5703.25 11197.77 16894.33 55921.95 71827.98</abscDebut>
-        <abscFin>5558.42 11040.77 16813.4 51072.26 71583.89 77219.49</abscFin>
+        <abscDebut>23.76 5703.25 11197.77 16894.33 50498.84 66404.87</abscDebut>
+        <abscFin>5558.42 11040.77 16813.4 50438.92 66160.77 71796.37</abscFin>
         <numExtremDebut>1 3 5 7 9 11</numExtremDebut>
         <numExtremFin>2 4 6 8 10 12</numExtremFin>
       </listeBranches>
@@ -96,7 +96,7 @@
         <repriseCalcul>false</repriseCalcul>
       </repriseEtude>
       <ligneEau>
-        <LigEauInit>true</LigEauInit>
+        <LigEauInit>false</LigEauInit>
         <modeEntree>1</modeEntree>
         <fichLigEau>mascaret.lig</fichLigEau>
         <formatFichLig>2</formatFichLig>
@@ -109,13 +109,13 @@
         <impressionPlanimetrage>false</impressionPlanimetrage>
         <impressionReseau>false</impressionReseau>
         <impressionLoiHydraulique>false</impressionLoiHydraulique>
-        <impressionligneEauInitiale>false</impressionligneEauInitiale>
+        <impressionligneEauInitiale>true</impressionligneEauInitiale>
         <impressionCalcul>true</impressionCalcul>
       </impression>
       <pasStockage>
         <premPasTpsStock>1</premPasTpsStock>
-        <pasStock>100</pasStock>
-        <pasImpression>100</pasImpression>
+        <pasStock>1</pasStock>
+        <pasImpression>1</pasImpression>
       </pasStockage>
       <resultats>
         <fichResultat>mascaret.opt</fichResultat>
@@ -147,7 +147,7 @@
       <variablesCalculees>false false false false false false false false false false false false false false false</variablesCalculees>
     </parametresVariablesCalculees>
     <parametresVariablesStockees>
-      <variablesStockees>false false false false false true true true false false true false false false false false false false false false false false true false false false false false false false true false false false false false false false false true false false</variablesStockees>
+      <variablesStockees>false false false false false true true true false false true false false false false false false false false false false false true false false false false false false true true false false false false false false false false true false false</variablesStockees>
     </parametresVariablesStockees>
     <parametresConfluents>
       <nbConfluents>3</nbConfluents>
@@ -226,17 +226,17 @@
         <loi>1</loi>
         <nbZone>6</nbZone>
         <numBranche>1 2 3 4 5 6</numBranche>
-        <absDebZone>23.76 5703.25 11197.77 16894.33 55921.95 71827.98</absDebZone>
-        <absFinZone>5558.42 11040.77 16813.4 51072.26 71583.89 77219.49</absFinZone>
+        <absDebZone>23.76 5703.25 11197.77 16894.33 50498.84 66404.87</absDebZone>
+        <absFinZone>5558.42 11040.77 16813.4 50438.92 66160.77 71796.37</absFinZone>
         <coefLitMin>25.0 25.0 25.0 25.0 25.0 25.0</coefLitMin>
         <coefLitMaj>15.0 15.0 15.0 15.0 15.0 15.0</coefLitMaj>
       </frottement>
       <zoneStockage>
         <loi>1</loi>
-        <nbProfils>3</nbProfils>
-        <numProfil>1 2 12</numProfil>
-        <limGauchLitMaj>0.5 241.5 552.0</limGauchLitMaj>
-        <limDroitLitMaj>51.5 1287.5 1485.5</limDroitLitMaj>
+        <nbProfils>4</nbProfils>
+        <numProfil>1 2 10 12</numProfil>
+        <limGauchLitMaj>0.5 241.5 104.0 552.0</limGauchLitMaj>
+        <limDroitLitMaj>51.5 1287.5 500.5 1485.5</limDroitLitMaj>
       </zoneStockage>
     </parametresCalage>
     <parametresLoisHydrauliques>
