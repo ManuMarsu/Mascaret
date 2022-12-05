@@ -109,7 +109,7 @@
         <impressionPlanimetrage>false</impressionPlanimetrage>
         <impressionReseau>false</impressionReseau>
         <impressionLoiHydraulique>false</impressionLoiHydraulique>
-        <impressionligneEauInitiale>true</impressionligneEauInitiale>
+        <impressionligneEauInitiale>false</impressionligneEauInitiale>
         <impressionCalcul>true</impressionCalcul>
       </impression>
       <pasStockage>
@@ -147,7 +147,7 @@
       <variablesCalculees>false false false false false false false false false false false false false false false</variablesCalculees>
     </parametresVariablesCalculees>
     <parametresVariablesStockees>
-      <variablesStockees>false false false false false true true true false false true false false false false false false false false false false false true false false false false false false true true false false false false false false false false true false false</variablesStockees>
+      <variablesStockees>false false false false false true true true false false true false false false false false false false false false false false true false false false false false false false true false false false false false false false false true false false</variablesStockees>
     </parametresVariablesStockees>
     <parametresConfluents>
       <nbConfluents>3</nbConfluents>

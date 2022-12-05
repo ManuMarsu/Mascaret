@@ -2,7 +2,7 @@
   <parametresCas>
     <parametresGeneraux>
       <versionCode>3</versionCode>
-      <code>1</code>
+      <code>2</code>
       <fichMotsCles>mascaret.xcas</fichMotsCles>
       <dictionaire>dico.txt</dictionaire>
       <progPrincipal>princi.f</progPrincipal>
@@ -41,7 +41,7 @@
     <parametresTemporels>
       <pasTemps>360.0</pasTemps>
       <tempsInit>0.0</tempsInit>
-      <critereArret>2</critereArret>
+      <critereArret>1</critereArret>
       <nbPasTemps>2</nbPasTemps>
       <tempsMax>4003200.0</tempsMax>
       <pasTempsVar>false</pasTempsVar>
@@ -96,7 +96,7 @@
         <repriseCalcul>false</repriseCalcul>
       </repriseEtude>
       <ligneEau>
-        <LigEauInit>false</LigEauInit>
+        <LigEauInit>true</LigEauInit>
         <modeEntree>1</modeEntree>
         <fichLigEau>mascaret.lig</fichLigEau>
         <formatFichLig>2</formatFichLig>
@@ -109,13 +109,13 @@
         <impressionPlanimetrage>false</impressionPlanimetrage>
         <impressionReseau>false</impressionReseau>
         <impressionLoiHydraulique>false</impressionLoiHydraulique>
-        <impressionligneEauInitiale>true</impressionligneEauInitiale>
+        <impressionligneEauInitiale>false</impressionligneEauInitiale>
         <impressionCalcul>true</impressionCalcul>
       </impression>
       <pasStockage>
         <premPasTpsStock>1</premPasTpsStock>
-        <pasStock>1</pasStock>
-        <pasImpression>1</pasImpression>
+        <pasStock>100</pasStock>
+        <pasImpression>100</pasImpression>
       </pasStockage>
       <resultats>
         <fichResultat>mascaret.opt</fichResultat>
@@ -147,7 +147,7 @@
       <variablesCalculees>false false false false false false false false false false false false false false false</variablesCalculees>
     </parametresVariablesCalculees>
     <parametresVariablesStockees>
-      <variablesStockees>false false false false false true true true false false true false false false false false false false false false false false true false false false false false false true true false false false false false false false false true false false</variablesStockees>
+      <variablesStockees>false false false false false true true true false false true false false false false false false false false false false false true false false false false false false false true false false false false false false false false true false false</variablesStockees>
     </parametresVariablesStockees>
     <parametresConfluents>
       <nbConfluents>3</nbConfluents>
