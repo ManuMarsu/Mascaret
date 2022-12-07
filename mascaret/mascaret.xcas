@@ -2,7 +2,7 @@
   <parametresCas>
     <parametresGeneraux>
       <versionCode>3</versionCode>
-      <code>1</code>
+      <code>2</code>
       <fichMotsCles>mascaret.xcas</fichMotsCles>
       <dictionaire>dico.txt</dictionaire>
       <progPrincipal>princi.f</progPrincipal>
@@ -41,7 +41,7 @@
     <parametresTemporels>
       <pasTemps>360.0</pasTemps>
       <tempsInit>0.0</tempsInit>
-      <critereArret>2</critereArret>
+      <critereArret>1</critereArret>
       <nbPasTemps>2</nbPasTemps>
       <tempsMax>4003200.0</tempsMax>
       <pasTempsVar>false</pasTempsVar>
@@ -88,7 +88,7 @@
           <string>montmoyen</string>
         </noms>
         <typeCond>1 3 1</typeCond>
-        <numLoi>3 2 4</numLoi>
+        <numLoi>5 4 6</numLoi>
       </extrLibres>
     </parametresGeometrieReseau>
     <parametresConditionsInitiales>
@@ -96,7 +96,7 @@
         <repriseCalcul>false</repriseCalcul>
       </repriseEtude>
       <ligneEau>
-        <LigEauInit>false</LigEauInit>
+        <LigEauInit>true</LigEauInit>
         <modeEntree>1</modeEntree>
         <fichLigEau>mascaret.lig</fichLigEau>
         <formatFichLig>2</formatFichLig>
@@ -109,13 +109,13 @@
         <impressionPlanimetrage>false</impressionPlanimetrage>
         <impressionReseau>false</impressionReseau>
         <impressionLoiHydraulique>false</impressionLoiHydraulique>
-        <impressionligneEauInitiale>true</impressionligneEauInitiale>
+        <impressionligneEauInitiale>false</impressionligneEauInitiale>
         <impressionCalcul>true</impressionCalcul>
       </impression>
       <pasStockage>
         <premPasTpsStock>1</premPasTpsStock>
-        <pasStock>1</pasStock>
-        <pasImpression>1</pasImpression>
+        <pasStock>100</pasStock>
+        <pasImpression>100</pasImpression>
       </pasStockage>
       <resultats>
         <fichResultat>mascaret.opt</fichResultat>
@@ -147,7 +147,7 @@
       <variablesCalculees>false false false false false false false false false false false false false false false</variablesCalculees>
     </parametresVariablesCalculees>
     <parametresVariablesStockees>
-      <variablesStockees>false false false false false true true true false false true false false false false false false false false false false false true false false false false false false true true false false false false false false false false true false false</variablesStockees>
+      <variablesStockees>false false false false false true true true false false true false false false false false false false false false false false true false false false false false false false true false false false false false false false false true false false</variablesStockees>
     </parametresVariablesStockees>
     <parametresConfluents>
       <nbConfluents>3</nbConfluents>
@@ -202,14 +202,16 @@
     </parametresSingularite>
     <parametresApportDeversoirs>
       <debitsApports>
-        <nbQApport>1</nbQApport>
+        <nbQApport>3</nbQApport>
         <noms>
-          <string>Apport_Aval_Belan</string>
+          <string>Villote</string>
+          <string>Apport_diffus_Belan</string>
+          <string>Apport_Riel</string>
         </noms>
-        <numBranche>4</numBranche>
-        <abscisses>38079.14</abscisses>
-        <longueurs>100.0</longueurs>
-        <numLoi>1</numLoi>
+        <numBranche>4 4 4</numBranche>
+        <abscisses>19997.85 37844.64 37943.95</abscisses>
+        <longueurs>11000.0 3600.0 1.0</longueurs>
+        <numLoi>3 2 1</numLoi>
       </debitsApports>
       <devers_late>
         <nbDeversoirs>0</nbDeversoirs>
@@ -242,14 +244,36 @@
       </zoneStockage>
     </parametresCalage>
     <parametresLoisHydrauliques>
-      <nb>4</nb>
+      <nb>6</nb>
       <lois>
         <structureParametresLoi>
-          <nom>Apport_Aval_Belan</nom>
+          <nom>Apport_Riel</nom>
           <type>1</type>
           <donnees>
             <modeEntree>1</modeEntree>
-            <fichier>Apport_Aval_Belan.loi</fichier>
+            <fichier>Riel_T100.loi</fichier>
+            <uniteTps>-0</uniteTps>
+            <nbPoints>-0</nbPoints>
+            <nbDebitsDifferents>-0</nbDebitsDifferents>
+          </donnees>
+        </structureParametresLoi>
+        <structureParametresLoi>
+          <nom>Apport_diffus_Belan</nom>
+          <type>1</type>
+          <donnees>
+            <modeEntree>1</modeEntree>
+            <fichier>Apport_Belan_T100_sur3600.loi</fichier>
+            <uniteTps>-0</uniteTps>
+            <nbPoints>-0</nbPoints>
+            <nbDebitsDifferents>-0</nbDebitsDifferents>
+          </donnees>
+        </structureParametresLoi>
+        <structureParametresLoi>
+          <nom>Villote</nom>
+          <type>1</type>
+          <donnees>
+            <modeEntree>1</modeEntree>
+            <fichier>Villote.loi</fichier>
             <uniteTps>-0</uniteTps>
             <nbPoints>-0</nbPoints>
             <nbDebitsDifferents>-0</nbDebitsDifferents>
