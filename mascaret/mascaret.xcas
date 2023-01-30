@@ -17,7 +17,7 @@
     </parametresGeneraux>
     <parametresModelePhysique>
       <perteChargeConf>false</perteChargeConf>
-      <compositionLits>0</compositionLits>
+      <compositionLits>1</compositionLits>
       <conservFrotVertical>true</conservFrotVertical>
       <elevCoteArrivFront>0.05</elevCoteArrivFront>
       <interpolLinStrickler>false</interpolLinStrickler>
@@ -106,7 +106,7 @@
       <titreCalcul>etude hydraulique1d</titreCalcul>
       <impression>
         <impressionGeometrie>false</impressionGeometrie>
-        <impressionPlanimetrage>false</impressionPlanimetrage>
+        <impressionPlanimetrage>true</impressionPlanimetrage>
         <impressionReseau>false</impressionReseau>
         <impressionLoiHydraulique>false</impressionLoiHydraulique>
         <impressionligneEauInitiale>false</impressionligneEauInitiale>
@@ -181,8 +181,8 @@
         <nbPas>957</nbPas>
         <nbZones>6</nbZones>
         <valeursPas>0.05 0.05 0.05 0.05 0.05 0.05</valeursPas>
-        <num1erProf>1 3 5 7 14 16</num1erProf>
-        <numDerProf>2 4 6 13 15 17</numDerProf>
+        <num1erProf>1 3 5 7 13 15</num1erProf>
+        <numDerProf>2 4 6 12 14 16</numDerProf>
       </planim>
       <maillage>
         <modeSaisie>2</modeSaisie>
@@ -190,8 +190,8 @@
         <maillageClavier>
           <nbSections>0</nbSections>
           <nbPlages>6</nbPlages>
-          <num1erProfPlage>1 3 5 7 14 16</num1erProfPlage>
-          <numDerProfPlage>2 4 6 13 15 17</numDerProfPlage>
+          <num1erProfPlage>1 3 5 7 13 15</num1erProfPlage>
+          <numDerProfPlage>2 4 6 12 14 16</numDerProfPlage>
           <pasEspacePlage>25.0 25.0 25.0 25.0 25.0 25.0</pasEspacePlage>
           <nbZones>0</nbZones>
         </maillageClavier>
@@ -243,10 +243,10 @@
       </frottement>
       <zoneStockage>
         <loi>1</loi>
-        <nbProfils>5</nbProfils>
-        <numProfil>1 2 8 13 15</numProfil>
-        <limGauchLitMaj>0.5 241.5 0.0 104.0 552.0</limGauchLitMaj>
-        <limDroitLitMaj>51.5 1287.5 432.0 500.5 1485.5</limDroitLitMaj>
+        <nbProfils>4</nbProfils>
+        <numProfil>1 2 12 14</numProfil>
+        <limGauchLitMaj>0.5 241.5 104.0 552.0</limGauchLitMaj>
+        <limDroitLitMaj>51.5 1287.5 500.5 1485.5</limDroitLitMaj>
       </zoneStockage>
     </parametresCalage>
     <parametresLoisHydrauliques>
@@ -257,7 +257,7 @@
           <type>1</type>
           <donnees>
             <modeEntree>1</modeEntree>
-            <fichier>Diffus_Autricourt.loi</fichier>
+            <fichier>T50_Diffus_Autricourt.loi</fichier>
             <uniteTps>-0</uniteTps>
             <nbPoints>-0</nbPoints>
             <nbDebitsDifferents>-0</nbDebitsDifferents>
@@ -268,7 +268,7 @@
           <type>1</type>
           <donnees>
             <modeEntree>1</modeEntree>
-            <fichier>Diffus_Digeanne_aval.loi</fichier>
+            <fichier>T50_Diffus_DigeanneAval.loi</fichier>
             <uniteTps>-0</uniteTps>
             <nbPoints>-0</nbPoints>
             <nbDebitsDifferents>-0</nbDebitsDifferents>
@@ -279,7 +279,7 @@
           <type>1</type>
           <donnees>
             <modeEntree>1</modeEntree>
-            <fichier>Diffus_Ource_jonction.loi</fichier>
+            <fichier>T50_Diffus_Ource_jonction.loi</fichier>
             <uniteTps>-0</uniteTps>
             <nbPoints>-0</nbPoints>
             <nbDebitsDifferents>-0</nbDebitsDifferents>
@@ -290,7 +290,7 @@
           <type>1</type>
           <donnees>
             <modeEntree>1</modeEntree>
-            <fichier>Diffus_VanveyRD.loi</fichier>
+            <fichier>T50_Diffus_VanveyRD.loi</fichier>
             <uniteTps>-0</uniteTps>
             <nbPoints>-0</nbPoints>
             <nbDebitsDifferents>-0</nbDebitsDifferents>
@@ -301,7 +301,7 @@
           <type>1</type>
           <donnees>
             <modeEntree>1</modeEntree>
-            <fichier>Diffus_Villote_Belan.loi</fichier>
+            <fichier>T50_Diffus_Villotte_Belan.loi</fichier>
             <uniteTps>-0</uniteTps>
             <nbPoints>-0</nbPoints>
             <nbDebitsDifferents>-0</nbDebitsDifferents>
@@ -312,7 +312,7 @@
           <type>1</type>
           <donnees>
             <modeEntree>1</modeEntree>
-            <fichier>Diffus_Voulaines.loi</fichier>
+            <fichier>T50_Diffus_Voulaines.loi</fichier>
             <uniteTps>-0</uniteTps>
             <nbPoints>-0</nbPoints>
             <nbDebitsDifferents>-0</nbDebitsDifferents>
@@ -323,7 +323,7 @@
           <type>1</type>
           <donnees>
             <modeEntree>1</modeEntree>
-            <fichier>Essarts_T100.loi</fichier>
+            <fichier>T50_Essarts.loi</fichier>
             <uniteTps>-0</uniteTps>
             <nbPoints>-0</nbPoints>
             <nbDebitsDifferents>-0</nbDebitsDifferents>
@@ -334,7 +334,7 @@
           <type>1</type>
           <donnees>
             <modeEntree>1</modeEntree>
-            <fichier>Riel_T100.loi</fichier>
+            <fichier>T50_Riel.loi</fichier>
             <uniteTps>-0</uniteTps>
             <nbPoints>-0</nbPoints>
             <nbDebitsDifferents>-0</nbDebitsDifferents>
@@ -345,7 +345,7 @@
           <type>1</type>
           <donnees>
             <modeEntree>1</modeEntree>
-            <fichier>T100_Vautilieres.loi</fichier>
+            <fichier>T50_Vautiliere.loi</fichier>
             <uniteTps>-0</uniteTps>
             <nbPoints>-0</nbPoints>
             <nbDebitsDifferents>-0</nbDebitsDifferents>
@@ -367,7 +367,7 @@
           <type>1</type>
           <donnees>
             <modeEntree>1</modeEntree>
-            <fichier>Leuglay_T100.loi</fichier>
+            <fichier>T50_Leuglay.loi</fichier>
             <uniteTps>-0</uniteTps>
             <nbPoints>-0</nbPoints>
             <nbDebitsDifferents>-0</nbDebitsDifferents>
@@ -378,7 +378,7 @@
           <type>1</type>
           <donnees>
             <modeEntree>1</modeEntree>
-            <fichier>Montmoyen_T100.loi</fichier>
+            <fichier>T50_Montmoyen.loi</fichier>
             <uniteTps>-0</uniteTps>
             <nbPoints>-0</nbPoints>
             <nbDebitsDifferents>-0</nbDebitsDifferents>
