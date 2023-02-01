@@ -1963,8 +1963,8 @@ class ClassMascaret:
                 self.mgis.add_info("Simulation error")
                 return
 
-            self.lit_opt_new(id_run, date_debut, self.baseName, comments,
-                             par['presenceTraceurs'], cond_casier)
+            # self.lit_opt_new(id_run, date_debut, self.baseName, comments,
+            #                  par['presenceTraceurs'], cond_casier)
 
             if self.check_mobil_gate():
                 self.read_mobil_gate_res(id_run)
