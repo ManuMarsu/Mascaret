@@ -1963,8 +1963,8 @@ class ClassMascaret:
                 self.mgis.add_info("Simulation error")
                 return
 
-            # self.lit_opt_new(id_run, date_debut, self.baseName, comments,
-            #                  par['presenceTraceurs'], cond_casier)
+            self.lit_opt_new(id_run, date_debut, self.baseName, comments,
+                             par['presenceTraceurs'], cond_casier)
 
             if self.check_mobil_gate():
                 self.read_mobil_gate_res(id_run)
@@ -2111,7 +2111,7 @@ class ClassMascaret:
             lpk = [rows['abscissa'][0] for var in range(len(time))]
             dico_pk[id_config] = rows['abscissa'][0]
             dico_time[id_config] = list(time)
-            dict_idx = self.get_idruntpk()
+            dict_idx = self.get_idruntpk(id_run)
             v_tmp = self.creat_values_val(id_run, id_var, lpk,
                                           time, dico_res[id_config]['ZSTR'], dict_idx)
 
@@ -2692,7 +2692,8 @@ class ClassMascaret:
         return False
 
     def add_res_idx(self, id_runs, times, pks):
-        dict_idx = self.get_idruntpk()
+        d = datetime.datetime
+        dict_idx = self.get_idruntpk(id_runs[0])
         values_idx = []
         if isinstance(id_runs, list):
             for id_run, time, pk in zip(id_runs, times, pks):
@@ -2760,7 +2761,7 @@ class ClassMascaret:
                     dico_time[name] = list(time)
                     self.add_res_idx(lrun, list(time), lpk)
 
-                    dict_idx = self.get_idruntpk()
+                    dict_idx = self.get_idruntpk(id_run)
 
                     v_tmp = self.creat_values_val(id_run, id_var, lpk,
                                                   time, dico_res[name]['ZSTR'], dict_idx)
@@ -3023,6 +3024,7 @@ class ClassMascaret:
         :param casier: if basins are actived
         :return:
         """
+        d = datetime.datetime
         nom_fich = os.path.join(self.dossierFileMasc, base_namefile + '.opt')
         # if self.mgis.DEBUG:
         self.mgis.add_info("Load data ....")
@@ -3044,7 +3046,9 @@ class ClassMascaret:
 
         type_res = 'opt'
         init_col = ['TIME', 'BRANCH', 'SECTION', 'PK']
+        debut = d.now()  #Début lecture opt 
         val_opt = self.new_read_opt(nom_fich, type_res, init_col)
+        self.mgis.add_info(f"Fin lecture opt : {d.now() - debut}")
         key_val_opt = list(val_opt.keys())
 
         self.save_new_results(val_opt, id_run)
@@ -3101,9 +3105,9 @@ class ClassMascaret:
                 self.save_new_results(val, id_run)
                 self.save_run_graph(val, id_run, type_res)
 
-    def get_idruntpk(self):
+    def get_idruntpk(self, id_run):
         dict_idx = dict()
-        tmp = self.mdb.select('results_idx', list_var=['idruntpk', 'id_runs', 'time', 'pknum'])
+        tmp = self.mdb.select('results_idx', where=f'id_runs = {id_run}', list_var=['idruntpk', 'id_runs', 'time', 'pknum'])
         if tmp:
             for iter_id in range(len(tmp["idruntpk"])):
                 dict_idx[(tmp['id_runs'][iter_id], tmp['time'][iter_id], tmp['pknum'][iter_id])] \
@@ -3117,6 +3121,7 @@ class ClassMascaret:
         :param id_run: run index
         :return: True
         """
+        d = datetime.datetime
 
         val_keys = val.keys()
         if 'PK' in val_keys:
@@ -3127,12 +3132,15 @@ class ClassMascaret:
             lpk = val['LNUM']
 
         # insert table result_idx
+        debut = d.now()  #insertion table result_idx 
         self.add_res_idx([id_run for ii in range(len(lpk))], val['TIME'], lpk)
-        dict_idx = self.get_idruntpk()
+        dict_idx = self.get_idruntpk(id_run)
+        self.mgis.add_info(f"insertion table result_idx : {d.now() - debut}")
         if not dict_idx:
             return False
         values = []
         val_sect = []
+        debut = d.now()  #Début create values
         for key in val_keys:
             if isinstance(key, int):
                 # v_tmp = self.creat_values(id_run, key, lpk,
@@ -3149,7 +3157,9 @@ class ClassMascaret:
                         break
                     val_sect.append((id_run, pk, int(bra), sect))
                     cond = True
+        self.mgis.add_info(f"create values : {d.now() - debut}")
 
+        debut = d.now() # Début insert_res
         col_tab = ['idruntpk', 'var', 'val']
         nb_stock = 10000
         if len(values) > 0:
@@ -3186,6 +3196,7 @@ class ClassMascaret:
                     self.mdb.new_insert_res('results_sect',
                                             val_sect[nb_stock * (i + 1):],
                                             col_sect)
+        self.mgis.add_info(f"insert res : {d.now() - debut}")
         return True
 
     def get_for_lig_new(self, id_run):

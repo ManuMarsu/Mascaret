@@ -1162,9 +1162,25 @@ $BODY$
         try:
             if self.con:
                 file = self.buff_file(values)
+                # sql_drop_index = 'DROP INDEX IF EXISTS [name_index] CASCADE'
+                # cur_index = self.con.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                # sql_liste_index = f"SELECT tablename, indexname, indexdef FROM pg_indexes WHERE schemaname = '{self.SCHEMA}' AND tablename = '{table}'"
+                # cur_index.execute(sql_liste_index)
+                # liste_index = cur_index.fetchall()
+                # liste_index_a_recreer = []
+                # for index in liste_index:
+                #     if index['indexname'][-4:] != 'pkey':
+                #         self.mgis.add_info(sql_drop_index.replace('[name_index]', index['indexname']))
+                #         cur_index.execute(sql_drop_index.replace('[name_index]', index['indexname']))
+                #         liste_index_a_recreer.append(index['indexdef'])
+                # self.con.commit()
                 cur = self.con.cursor(cursor_factory=psycopg2.extras.DictCursor)
                 cur.copy_from(file, '{0}.{1}'.format(self.SCHEMA, table),
                               columns=col_tab)
+                # for index in liste_index_a_recreer:
+                #     self.mgis.add_info(index)
+                #     cur_index.execute(index)
+                # self.con.commit()
                 del file
 
         except Exception as e:
@@ -1183,9 +1199,9 @@ $BODY$
         for x in liste:
             for i in range(leng):
                 if i == 0:
-                    txt += "{}".format(x[i])
+                    txt += f"{x[i]}"
                 else:
-                    txt += "\t{}".format(x[i])
+                    txt += f"\t{x[i]}"
             txt += '\n'
 
         f = io.StringIO(txt)
